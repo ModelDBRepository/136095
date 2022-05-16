@@ -2091,28 +2091,28 @@ int list_vector_px (Object *ob, int i, double** px) {
 
 //* list_vector_px2(LIST,ITEM#,DOUBLE PTR ADDRESS,VEC POINTER ADDRESS) 
 //  returns the vector pointer as well as the double pointer
-int list_vector_px2 (Object *ob, int i, double** px, void** vv) {
+int list_vector_px2 (Object *ob, int i, double** px, IvocVect** vv) {
   Object* obv;
   int sz;
   obv = ivoc_list_item(ob, i);
   if (! ISVEC(obv)) return -1;
   sz = vector_capacity(obv->u.this_pointer);
   *px = vector_vec(obv->u.this_pointer);
-  *vv = (void*) obv->u.this_pointer;
+  *vv = (IvocVect*) obv->u.this_pointer;
   return sz;
 }
 
 //* list_vector_px3(LIST,ITEM#,DOUBLE PTR ADDRESS,VEC POINTER ADDRESS) 
 //  same as px2 but returns max vec size instead of current vecsize
 //  side effect -- increase vector size to maxsize
-int list_vector_px3 (Object *ob, int i, double** px, void** vv) {
+int list_vector_px3 (Object *ob, int i, double** px, IvocVect** vv) {
   Object* obv;
   int sz;
   obv = ivoc_list_item(ob, i);
   if (! ISVEC(obv)) return -1;
   sz = vector_buffer_size(obv->u.this_pointer);
   *px = vector_vec(obv->u.this_pointer);
-  *vv = (void*) obv->u.this_pointer;
+  *vv = (IvocVect*) obv->u.this_pointer;
   vector_resize(*vv,sz);
   return sz;
 }
@@ -2399,7 +2399,7 @@ int openvec (int arg, double **y) {
 }
 
 // vector_newsize() will also increase size of vector
-double *vector_newsize (void* vv, int n) {
+double *vector_newsize (IvocVect* vv, int n) {
   vector_resize(vv,n);
   return vector_vec(vv);
 }

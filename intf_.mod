@@ -121,7 +121,7 @@ void*    ww[NSW];
 double* wwo[NSW];
 static int AM=0, NM=1, GA=2, GB=3, SU=3, IN=4, DP=2; // from labels.hoc
 static double wts[10],hsh[10];  // for jitcons to use as a junk pointer
-static int spkoutf2();
+static void spkoutf2();
 ENDVERBATIM
 
 :* NEURON, PARAMETER, ASSIGNED blocks
@@ -323,7 +323,7 @@ unsigned int GetDVIDSeedVal(unsigned int id) {
   } else { 
     if (seadsetting==2) printf("Warning: GetDVIDSeedVal called with wt rand turned off\n");
     x[0]=(double)id; x[1]=seaddvioff;
-    sead=hashseed2(2,&x);
+    sead=hashseed2(2,x);
   }
   return sead;
 }
@@ -414,7 +414,7 @@ ENDVERBATIM
           sead=(unsigned int)(floor(_lflag)*ip->id*seedstep); // all integers
         } else { // hash on presynaptic id+FOFFSET,poid,seedstep
           hsh[0]=floor(_lflag); hsh[1]=(double)ip->id; hsh[2]=seedstep;
-          sead=hashseed2(3,&hsh); // hsh[] is just scratch pad
+          sead=hashseed2(3,hsh); // hsh[] is just scratch pad
         }
         mcell_ran4(&sead, &_args[sy], 2, 1.);
         for (ii=sy;ii<sy+2;ii++) { // scale appropriately; 
@@ -834,7 +834,7 @@ ENDVERBATIM
 }
 
 VERBATIM
-static int spkoutf2 () {
+static void spkoutf2 () {
     fprintf(wf1,"//b9 -2 t%0.2f %ld %ld\n",t/1e3,jrj,ftell(wf2));
     fwrite(jrtv,sizeof(double),jrj,wf2); // write times
     fwrite(jrid,sizeof(double),jrj,wf2); // write id
@@ -1095,7 +1095,7 @@ FUNCTION getdvi () {
             sead=(unsigned int)(FOFFSET+ip->id)*qp->id*seedstep; 
           } else { // hashed sead setting
             hsh[0]=(double)(FOFFSET+ip->id); hsh[1]=(double)(qp->id); hsh[2]=seedstep;
-            sead=hashseed2(3,&hsh); 
+            sead=hashseed2(3,hsh); 
           }
           mcell_ran4(&sead, y, 2, 1.);
           for(ii=0;ii<2;ii++) {
