@@ -51,7 +51,7 @@ INITIAL {
 CONSTRUCTOR {
 VERBATIM
   cbsv=0x0;
-  _p_sop = (void*)ecalloc(1, sizeof(id0)); // important that calloc sets all flags etc to 0
+  _p_sop = (double*)ecalloc(1, sizeof(id0)); // important that calloc sets all flags etc to 0
   ip = IDP;
 ENDVERBATIM
 }
