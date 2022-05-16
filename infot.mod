@@ -876,7 +876,7 @@ static double entropxfgxp (void* vv) {
   int sz,minv,maxv,cnt,i,j,szp,*X;
   sz = vector_instance_px(vv,&x);
   cnt=0;
-  X=iscrset(sz);
+  X=scrset(sz);
   minv=1e9; maxv=-1e9;
   for (i=0;i<sz;i++) { 
     X[i]=(int)x[i]; 
@@ -1406,7 +1406,7 @@ double entropspksd (double* x,int sz) {
   ret=-1.0; err=0;
   px=NULL; 
   minv=1000000000; maxv=-1000000000;
-  X=iscrset(sz*2); // move into integer arrays
+  X=scrset(sz*2); // move into integer arrays
   cnt=0;
   for (i=0;i<sz;i++) { 
     X[i]=(int)x[i]; 
