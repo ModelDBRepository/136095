@@ -150,7 +150,7 @@ static double ident (void* vv) {
   int nx,bsz; double* x;
   nx = vector_instance_px(vv, &x);
   bsz=vector_buffer_size(vv);
-  printf("Obj*%x Dbl*%x Size: %d Bufsize: %d\n",(unsigned int)vv,(unsigned int)x,nx,bsz);
+  printf("Obj*%x Dbl*%x Size: %d Bufsize: %d\n",vv,x,nx,bsz);
   return (double)nx;
 }
 ENDVERBATIM
@@ -228,7 +228,7 @@ static double circ (void* vv) {
   int i, nx, ny, flag, lnew;
   double *x, *y, x0, y0, x1, y1, rad, theta;
   lnew=0;
-  nx = vector_instance_px(vv, &x);
+  nx = vector_instance_px((IvocVect*)vv, &x);
   ny = vector_arg_px(1, &y);
   if (ny!=nx) { hoc_execerror("v.circ: Vector sizes don't match.", 0); }
   x0=*getarg(2); y0=*getarg(3); rad=*getarg(4); 
@@ -237,7 +237,7 @@ static double circ (void* vv) {
     rad=sqrt((x0-x1)*(x0-x1) + (y0-y1)*(y0-y1));
     lnew=*getarg(6); // resize the vectors
   } else if (ifarg(5)) lnew=*getarg(5); // resize the vectors
-  if (lnew) { nx=lnew; x=vector_newsize(vv,nx); y=vector_newsize(vector_arg(1),ny=nx); }
+  if (lnew) { nx=lnew; x=vector_newsize((IvocVect*)vv,nx); y=vector_newsize(vector_arg(1),ny=nx); }
   for (i=0,theta=0; i<nx; theta+=2*M_PI/(nx-1),i++) {
     x[i]=y0+rad*sin(theta); y[i]=x0+rad*cos(theta); 
   }
@@ -325,10 +325,11 @@ ENDVERBATIM
 : uses ind as index into vecA's to load in vecB's (for select); a nondestructive fewind()
 VERBATIM
 static double findx (void* vv) {
+  IvocVect* vv_tmp = (IvocVect*)vv;
   int i, j, ni, nx, av[VRRY], bv[VRRY], num;
   Object *ob1, *ob2;
   double *ind, *avo[VRRY], *bvo[VRRY];
-  ni = vector_instance_px(vv, &ind);
+  ni = vector_instance_px((IvocVect*)vv, &ind);
   ob1 = *hoc_objgetarg(1);
   ob2 = *hoc_objgetarg(2);
   num = ivoc_list_count(ob1);
@@ -342,12 +343,12 @@ static double findx (void* vv) {
   }
   nx=av[0]; // size of source vecs
   for (i=0;i<num;i++) { 
-    bv[i]=list_vector_px2(ob2, i, &bvo[i], &vv); // dest vectors 
-    if (vector_buffer_size(vv)<ni) { 
+    bv[i]=list_vector_px2(ob2, i, &bvo[i], &vv_tmp); // dest vectors 
+    if (vector_buffer_size((IvocVect*)vv)<ni) { 
       printf("findx ****ERRD**** arg#%d need:%d sz:%d\n",num+i+1,ni,vector_buffer_size(vv));
       hoc_execerror("Destination vector with insufficient size: ", 0); 
     } else {
-      vector_resize(vv, ni);
+      vector_resize((IvocVect*)vv, ni);
     }
   }
   if (ni>scrsz) { 
@@ -369,10 +370,11 @@ ENDVERBATIM
 : ind picks out specific vectors if not doing all of them
 VERBATIM
 static double lma (void* vv) {
+  IvocVect* vv_tmp = (IvocVect*)vv;
   int i, j, k, ia, ib, ni, nj, nx, av[VRRY], bv[VRRY], num, numb, beg, end, *xx;
   Object *ob1, *ob2;
   double *ind, *avo[VRRY], *bvo[VRRY], mul,mmul,add,madd;
-  ni = vector_instance_px(vv, &ind);
+  ni = vector_instance_px((IvocVect*)vv, &ind);
   xx=iscrset(ni);
   ob1 = *hoc_objgetarg(1);    ob2 = *hoc_objgetarg(2);
   beg = (int)*getarg(3);      end= (int)*getarg(4);
@@ -395,8 +397,8 @@ static double lma (void* vv) {
   nx=av[0]; // size of source vecs
   if (beg>=end || beg<0 || end>nx) {printf("lma ERRC1 OOB %d - %d (%d)\n",beg,end,nx); hxe();}
   for (i=0;i<num;i++) { 
-    bv[i]=list_vector_px2(ob2, i, &bvo[i], &vv); // dest vectors 
-    if (bv[i]!=(end-beg)) bvo[i]=vector_newsize(vv, end-beg);
+    bv[i]=list_vector_px2(ob2, i, &bvo[i], &vv_tmp); // dest vectors 
+    if (bv[i]!=(end-beg)) bvo[i]=vector_newsize((IvocVect*)vv, end-beg);
   }
   if (nj>0) {
     for (ia=0,ib=0,mmul=1.,madd=0.;ia<nj;ia++,ib++) {
@@ -708,7 +710,7 @@ VERBATIM
 static double iwr (void* vv) {
   int i, j, nx; size_t r;
   double *x;
-  FILE* f, *hoc_obj_file_arg();
+  FILE* f;
   f = hoc_obj_file_arg(1);
   nx = vector_instance_px(vv, &x);
   scrset(nx);
@@ -724,7 +726,7 @@ VERBATIM
 static double ird (void* vv) {
   int i, j, nx, n; size_t r;
   double *x;
-  FILE* f, *hoc_obj_file_arg();
+  FILE* f;
   f = hoc_obj_file_arg(1);
   nx = vector_instance_px(vv, &x);
   r=fread(&n,sizeof(int),1,f);  // size
@@ -753,7 +755,7 @@ VERBATIM
 static double fread2 (void* vv) {
   int i, j, nx, n, type, maxsz; size_t r;
   double *x;
-  FILE* fp, *hoc_obj_file_arg();
+  FILE* fp;
   BYTEHEADER
 
   fp = hoc_obj_file_arg(1);
@@ -799,20 +801,20 @@ ENDVERBATIM
 VERBATIM
 static double revec (void* vv) {
   int i,j,k, nx, ny; double *x, *y;
-  nx = vector_instance_px(vv, &x);
-  if (nx==0) x=vector_newsize(vv,nx=100);
+  nx = vector_instance_px((IvocVect*)vv, &x);
+  if (nx==0) x=vector_newsize((IvocVect*)vv,nx=100);
   for (i=1,k=0;ifarg(i);i++,k++) {
     if (hoc_is_double_arg(i)) {
-      if (k>=nx) x=vector_newsize(vv,nx*=4);
+      if (k>=nx) x=vector_newsize((IvocVect*)vv,nx*=4);
       x[k]=*getarg(i);
     } else {
       ny=vector_arg_px(i, &y);
-      if (k+ny>=nx) x=vector_newsize(vv,nx=2*(nx+ny));
+      if (k+ny>=nx) x=vector_newsize((IvocVect*)vv,nx=2*(nx+ny));
       for (j=0;j<ny;j++,k++) x[k]=y[j];
       k--; // back up one
     }
   }
-  vector_resize(vv,k);
+  vector_resize((IvocVect*)vv,k);
 }
 ENDVERBATIM
 
@@ -820,8 +822,8 @@ ENDVERBATIM
 VERBATIM
 static double has (void* vv) {
   int i, j, nx, ny;
-  double *x, *y, val; void* vc;
-  nx = vector_instance_px(vv, &x);
+  double *x, *y, val; IvocVect* vc;
+  nx = vector_instance_px((IvocVect*)vv, &x);
   val=*getarg(1);
   ny=0;
   if (ifarg(2)) if (hoc_is_object_arg(2)) {
@@ -851,17 +853,17 @@ VERBATIM
 static double insct (void* vv) {
 	int i, j, k, nx, nv1, nv2, maxsz;
 	double *x, *v1, *v2;
-	nx = vector_instance_px(vv, &x);
+	nx = vector_instance_px((IvocVect*)vv, &x);
         if (maxsz==0) maxsz=1000;
-        maxsz=vector_buffer_size(vv);
-        x=vector_newsize(vv, maxsz);
+        maxsz=vector_buffer_size((IvocVect*)vv);
+        x=vector_newsize((IvocVect*)vv, maxsz);
 	nv1 = vector_arg_px(1, &v1);
 	nv2 = vector_arg_px(2, &v2);
         for (i=0,k=0;i<nv1;i++) for (j=0;j<nv2;j++) if (v1[i]==v2[j]) {
-          if (k==maxsz) x=vector_newsize(vv, maxsz*=2);
+          if (k==maxsz) x=vector_newsize((IvocVect*)vv, maxsz*=2);
           x[k++]=v1[i]; 
         }
-        vector_resize(vv, k);
+        vector_resize((IvocVect*)vv, k);
 	return (double)k;
 }
 ENDVERBATIM
@@ -872,10 +874,10 @@ VERBATIM
 static double linsct (void* vv) {
   int i,j,k,nx,maxsz,min,cnt,lt,rt,p,iv,jv,jj,fl; ListVec* pL;
   double *x, val;
-  nx = vector_instance_px(vv, &x);
-  maxsz=vector_buffer_size(vv);
+  nx = vector_instance_px((IvocVect*)vv, &x);
+  maxsz=vector_buffer_size((IvocVect*)vv);
   if (maxsz==0) maxsz=1000;
-  x=vector_newsize(vv, maxsz);
+  x=vector_newsize((IvocVect*)vv, maxsz);
   pL = AllocListVec(*hoc_objgetarg(1));
   min= (int)*getarg(2);
   for (iv=0;iv<pL->isz;iv++) {
@@ -895,13 +897,13 @@ static double linsct (void* vv) {
       }
       if (fl) cnt++;
       if (cnt>=min) {
-        if (k==maxsz) x=vector_newsize(vv, maxsz*=2);
+        if (k==maxsz) x=vector_newsize((IvocVect*)vv, maxsz*=2);
         x[k++]=val;
         break;
       }
     }
   }
-  vector_resize(vv, k);
+  vector_resize((IvocVect*)vv, k);
   return (double)k;
 }
 ENDVERBATIM
@@ -924,17 +926,17 @@ VERBATIM
 static double cull (void* vv) {
 	int i, j, k, nx, nv1, nv2, flag;
 	double *x, *v1, *v2, val;
-	nx = vector_instance_px(vv, &x);
+	nx = vector_instance_px((IvocVect*)vv, &x);
 	nv1 = vector_arg_px(1, &v1);
         if (hoc_is_double_arg(2)) { val=*getarg(2); nv2=0; } else nv2=vector_arg_px(2, &v2);
-        x=vector_newsize(vv,nx=nv1);
+        x=vector_newsize((IvocVect*)vv,nx=nv1);
         for (i=0,k=0;i<nv1;i++) {
           flag=1;
           if (nv2) { for (j=0;j<nv2;j++) if (v1[i]==v2[j]) flag=0;
           } else                         if (v1[i]==val  ) flag=0;
           if (flag) x[k++]=v1[i];
         }
-        vector_resize(vv, k);
+        vector_resize((IvocVect*)vv, k);
 	return (double)k;
 }
 ENDVERBATIM
@@ -987,16 +989,16 @@ static double mredundout (void* vv) {
   int i, j, k, m, p, q, maxsz, ns, nx, av[VRRY], bv[VRRY], num, numb, indflag, match;
   Object *ob, *ob2;
   double *x, *avo[VRRY], *bvo[VRRY], val[VRRY];
-  void *vva[VRRY],*vvb[VRRY];
-  nx = vector_instance_px(vv, &x);
+  IvocVect *vva[VRRY],*vvb[VRRY];
+  nx = vector_instance_px((IvocVect*)vv, &x);
   ob = *hoc_objgetarg(1);
   if (ifarg(2)) indflag=(int)*getarg(2); else indflag=0; 
   if (ifarg(3)) { 
     ob2 = *hoc_objgetarg(3);
     numb = ivoc_list_count(ob2);
   } else numb=0;
-  maxsz=vector_buffer_size(vv);
-  if (indflag) vector_resize(vv, maxsz); // else vector is not used
+  maxsz=vector_buffer_size((IvocVect*)vv);
+  if (indflag) vector_resize((IvocVect*)vv, maxsz); // else vector is not used
   num = ivoc_list_count(ob);
   if (num>VRRY) hoc_execerror("mredundout ****ERRA****: can only handle VRRY vectors", 0);
   for (i=0;i<num;i++) { 
@@ -1028,7 +1030,7 @@ static double mredundout (void* vv) {
   if (indflag) { // just fill ind with indices of the repeats
     if (k>maxsz){printf("mredundout****ERRE**** vec overflow %d>%d\n",k,maxsz);hxe();}
     for (i=0;i<k;i++) x[i]=(double)scr[i];
-    vector_resize(vv, k);
+    vector_resize((IvocVect*)vv, k);
   } else { // remove all the repeat rows
     if (k == 0) return (double)k;
     for (i=0,p=scr[0]; i<k-1; i++) { // iter thru the inds to remove
@@ -1055,8 +1057,8 @@ static double join (void* vv) {
   int i, j, k, m, p, q, maxsz, npiva, npivb, av[VRRY], bv[VRRY], num, numb, indflag, match;
   Object *ob, *ob2;
   double *piva, *pivb, *avo[VRRY], *bvo[VRRY], val[VRRY];
-  void *vva[VRRY],*vvb[VRRY];
-  npiva = vector_instance_px(vv, &piva);
+  IvocVect *vva[VRRY],*vvb[VRRY];
+  npiva = vector_instance_px((IvocVect*)vv, &piva);
   npivb = vector_arg_px(1, &pivb);
   ob = *hoc_objgetarg(2);
   ob2 = *hoc_objgetarg(3);
@@ -1337,10 +1339,10 @@ static double nearall (void* vv) {
   register int	lo, hi, mid;
   int i, j, k, kk, nx, ny, minind, nv[4];
   Object *ob;
-  void* vvl[4];
-  double *x, *y, *vvo[4], targ, dist, new, max, tmp;
+  IvocVect* vvl[4];
+  double *x, *y, *vvo[4], targ, dist, new_, max_, tmp;
   nx = vector_instance_px(vv, &x);
-  max = *getarg(1);
+  max_ = *getarg(1);
   ny = vector_arg_px(2, &y);
   ob = *hoc_objgetarg(3);
   if ((nv[0]=ivoc_list_count(ob))!=4) {printf("VECST::nearall() ERRA: %d\n",nv[0]); hxe();}
@@ -1356,12 +1358,12 @@ static double nearall (void* vv) {
     }
     dist=fabs(x[mid]-targ); minind=mid;
     for (i=-1;i<=1;i+=2) { kk=mid+i; // check the flanking values
-      if (kk>0 && kk<nx && (new=fabs(x[kk]-targ))<dist) { 
-        dist=new;
+      if (kk>0 && kk<nx && (new_=fabs(x[kk]-targ))<dist) { 
+        dist=new_;
         minind=kk;
       }
     }
-    if (dist<=max) {
+    if (dist<=max_) {
       if (k>=nv[1]) { printf("nearall WARN: oor %d %d\n",k,nv[1]); return -1.; }
       vvo[0][k]=dist; vvo[2][k]=targ; vvo[3][k]=x[minind];
       k++;
@@ -1395,14 +1397,14 @@ ENDVERBATIM
 VERBATIM
 static double nearest (void* vv) {
   int i, nx, minind, flag=0;
-  double *x, targ, dist, new, *to;
+  double *x, targ, dist, new_, *to;
   nx = vector_instance_px(vv, &x);
   targ = *getarg(1);
   if (ifarg(3)) flag = (int)*getarg(3);
   dist = 1e9;
-  for (i=0; i<nx; i++) if ((new=fabs(x[i]-targ))<dist) { 
-    if (flag && new==0) continue; // flag signals to not pick self
-    dist=new;
+  for (i=0; i<nx; i++) if ((new_=fabs(x[i]-targ))<dist) { 
+    if (flag && new_==0) continue; // flag signals to not pick self
+    dist=new_;
     minind=i;
   }
   if (ifarg(2)) *(hoc_pgetarg(2)) = dist;
@@ -1801,11 +1803,11 @@ VERBATIM
 static double l2p (void* vv) {
   int ix, i, j, n, num, cnt;
   double *x, *y;   Object* lob;
-  n = vector_instance_px(vv, &x);
+  n = vector_instance_px((IvocVect*)vv, &x);
   lob = *hoc_objgetarg(1);
   ix=(int)*getarg(2);
   num = ivoc_list_count(lob);
-  x=vector_newsize(vv,num);
+  x=vector_newsize((IvocVect*)vv,num);
   for (i=0;i<num;i++) {     // pick up vectors
     cnt = list_vector_px(lob, i, &y);
     if (ix>=cnt) {printf("vecst:l2p() ERRA: %d %d %d\n",i,ix,cnt); hxe();}
@@ -1835,7 +1837,7 @@ static double fetch (void* vv) {
     ny = vector_arg_px(3, &y);
     if (ny>pL->isz) vector_resize(vector_arg(3),pL->isz); // don't make bigger if only want a few
     for (i=0,j=0,cnt=0;i<pL->isz && j<ny;i++,j++) {
-      if (ix>pL->plen[i]) {printf("vecst:fetch()ERRB: %d %d %x\n",i,ix,(unsigned int)pL->pv[i]); 
+      if (ix>pL->plen[i]) {printf("vecst:fetch()ERRB: %d %d %x\n",i,ix,pL->pv[i]); 
         FreeListVec(&pL); hxe();}
       y[j]=pL->pv[i][ix];
       cnt++;
@@ -1844,7 +1846,7 @@ static double fetch (void* vv) {
   } else {
     for (i=0,j=3,cnt=0;i<pL->isz && ifarg(j);i++,j++) {
       if (hoc_is_double_arg(j)) continue; // skip this one
-      if (ix>pL->plen[i]) {printf("vecst:fetch()ERRB1: %d %d %x\n",i,ix,(unsigned int)pL->pv[i]); 
+      if (ix>pL->plen[i]) {printf("vecst:fetch()ERRB1: %d %d %x\n",i,ix,pL->pv[i]); 
         FreeListVec(&pL); hxe();}
       *hoc_pgetarg(j)=ret=pL->pv[i][ix];
       cnt++;      
@@ -1969,7 +1971,7 @@ static double lcat (void* vv) {
   int i, j, k, n, lc, cap, maxsz;
   Object *ob1;
   double *x, *fr; 
-  void *vw;
+  IvocVect *vw;
   n = vector_instance_px(vv, &x);
   vector_resize(vv,maxsz=vector_buffer_size(vv)); // open it up fully
   ob1 = *hoc_objgetarg(1);
@@ -2232,7 +2234,7 @@ VERBATIM
 static double uniq (void* vv) {
   int i, j, k, n, cnt, ny, nz, flag, lt, rt, mid, res;
   double *x, *y, *z, lastx, num;
-  void* voi[2]; Object* ob; char *ix;
+  IvocVect* voi[2]; Object* ob; char *ix;
   n = vector_instance_px(vv, &x);
   flag=ny=nz=0;
   if (n==0) {printf("vecst:uniq WARNA empty input vector\n"); return 0;}
@@ -2261,7 +2263,7 @@ static double uniq (void* vv) {
   }
   scrset(n);
   for (i=0;i<n;i++) scr[i]=i;
-  nrn_mlh_gsort(x, scr, n, cmpdfn);
+  nrn_mlh_gsort(x, (int*)scr, n, cmpdfn);
   if (ny) y[0]=x[scr[0]]; 
   if (nz>0) z[0]=1.;
   for (i=1, lastx=x[scr[0]], cnt=1; i<n; i++) {
@@ -2304,25 +2306,13 @@ static double uniq (void* vv) {
   return (double)cnt;
 }
 
-// x.unq(y,z) calls uniq2() -- functionality same as uniq(List,1)
-static double unq (void* vv) {
-  int n, cnt; double *x, *y, *z; 
-  n=vector_instance_px(vv, &x);
-  y=vector_newsize(vector_arg(1),n); // all same size
-  z=vector_newsize(vector_arg(2),n);
-  cnt=uniq2(n,x,y,z);
-  y=vector_newsize(vector_arg(1),cnt);
-  z=vector_newsize(vector_arg(2),cnt);
-  return (double)cnt;
-}
-
 //** uniq2() should be called with 3 double arrays and their size
 int uniq2 (int n, double *x, double *y, double *z) {
   int i, j, k, cnt, lt, rt, mid, res;  double lastx, num;
   if (n==0) return 0;
   scrset(n);
   for (i=0;i<n;i++) scr[i]=i;
-  nrn_mlh_gsort(x, scr, n, cmpdfn); // sort x
+  nrn_mlh_gsort(x, (int*)scr, n, cmpdfn); // sort x
   y[0]=x[scr[0]]; // first value
   for (i=1, lastx=x[scr[0]], cnt=1; i<n; i++) {
     if (x[scr[i]]>lastx+hoc_epsilon) {
@@ -2350,6 +2340,18 @@ int uniq2 (int n, double *x, double *y, double *z) {
     }
   } 
   return cnt;
+}
+
+// x.unq(y,z) calls uniq2() -- functionality same as uniq(List,1)
+static double unq (void* vv) {
+  int n, cnt; double *x, *y, *z; 
+  n=vector_instance_px(vv, &x);
+  y=vector_newsize(vector_arg(1),n); // all same size
+  z=vector_newsize(vector_arg(2),n);
+  cnt=uniq2(n,x,y,z);
+  y=vector_newsize(vector_arg(1),cnt);
+  z=vector_newsize(vector_arg(2),cnt);
+  return (double)cnt;
 }
 
 // v1.nqsvt() for nqs vt iterator
@@ -2681,7 +2683,7 @@ ENDVERBATIM
 VERBATIM
 static double rdfile (void* vv) {	
   int i, j, k, ni, vsz, ty, ny, nv, num, cnt, n[2], hd, vflag;
-  void* vnq[10000]; size_t r;
+  IvocVect* vnq[10000]; size_t r;
   size_t sz;
   char* xc; int *xi; float *xf; double *xd; void* xv; unsigned short* xus;
   Object* ob;
@@ -2868,7 +2870,11 @@ FUNCTION isojt () {
   Object *ob1, *ob2;
   ob1 = *hoc_objgetarg(1); ob2 = *hoc_objgetarg(2);
   if (!ob1) if (!ob2) return 1; else return 0;
+#ifndef NRN_VERSION_GTEQ_8_2_0
   if (!ob2 || ob1->template != ob2->template) {
+#else
+  if (!ob2 || ob1->ctemplate != ob2->ctemplate) {
+#endif
     return 0;
   }
   return 1;
@@ -3145,7 +3151,7 @@ void ListVecResize (ListVec* p,int newsz) {
   int i,j; Object* obv;
   for(i=0;i<p->isz;i++){
     obv = ivoc_list_item(p->pL, i);
-    p->pv[i]=vector_newsize(obv->u.this_pointer,newsz);
+    p->pv[i]=vector_newsize((IvocVect*)obv->u.this_pointer,newsz);
     p->plen[i]=newsz;
   }
 }
