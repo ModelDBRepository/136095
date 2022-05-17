@@ -59,3 +59,5 @@ For questions/comments/collaborations please contact
 Samuel Neymotin at samn at neurosim dot downstate dot edu
      or
 Bill Lytton at billl at neurosim dot downstate dot edu
+
+20220517 Edited multiple files to support NEURON versions <8.1.0, 8.2.0 and 9.0.0. -NEURON Developers
