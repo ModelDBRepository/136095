@@ -43,7 +43,7 @@ VERBATIM
 #define MIN_MERGESORT_LIST_SIZE    32
 
 union dblint {
-  int i[2];
+  uint32_t i[2];
   double d;
 };
 
@@ -860,8 +860,8 @@ static double hash (void* vv) {
       } else   {  xx.d=vvo[j][i]; }
       if (xx.i[0]==0) { xx.i[0]=xx.i[1]; xx.i[0]<<=4; } // high order bits may be 0
       if (xx.i[1]==0) { xx.i[1]=xx.i[0]; xx.i[1]<<=4; } // low order bits unlikely 0
-      mcell_ran4_init((uint32_t)xx.i[1]);
-      mcell_ran4((uint32_t*)xx.i[0], &y, 1, big); // generate a pseudorand number based on these
+      mcell_ran4_init(xx.i[1]);
+      mcell_ran4(&xx.i[0], &y, 1, big); // generate a pseudorand number based on these
       prod*=y;  // keep multiplying these out
     }
     if (! vfl) x[i]=prod; else return prod; // just return the 1 value
@@ -1298,7 +1298,7 @@ static double comb (void* vv) {
   }
   memset(x,0,sizeof(double)*kk);
   synccv(nn,kk,cc,x);
-  vector_resize(vv,kk);
+  vector_resize((IvocVect*)vv,kk);
   return 1.0;
 }
 ENDVERBATIM
@@ -1408,18 +1408,18 @@ static double rsampsig(void* vv){
     if(verbose>2){ for(j=0;j<n0;j++) pm[pids[j]]=0; for(;j<na;j++) pm[pids[j]]=1;  printf("pm: ");
       for(j=0;j<40;j++) printf("%d",pm[j]); printf("\n"); }//print out bit-array of element ids
     //compare measures between
-    vector_resize(vhso, n0); memcpy(phso,g0t,sizeof(double)*n0); 
+    vector_resize((IvocVect*)vhso, n0); memcpy(phso,g0t,sizeof(double)*n0); 
     hoc_call_func(pHocVecFunc,0); dm0 = hretval; //get measure on group 0
-    vector_resize(vhso, n1); memcpy(phso,g1t,sizeof(double)*n1); 
+    vector_resize((IvocVect*)vhso, n1); memcpy(phso,g1t,sizeof(double)*n1); 
     hoc_call_func(pHocVecFunc,0); dm1 = hretval; //get measure on group 1
     hoc_pushx(dm0); hoc_pushx(dm1); hoc_call_func(pHocCompFunc,2); //call comparison function
     pthis[i]=onesided?hretval:fabs(hretval); //save value from comparison function
   }
-  vector_resize(vv,nruncombs);//resize calling vec
+  vector_resize((IvocVect*)vv,nruncombs);//resize calling vec
   //get comparison function value for original data groups
-  vector_resize(vhso,n0); memcpy(phso,g0,sizeof(double)*n0); 
+  vector_resize((IvocVect*)vhso,n0); memcpy(phso,g0,sizeof(double)*n0); 
   hoc_call_func(pHocVecFunc,0); dm0 = hretval; //get measure on original group 0
-  vector_resize(vhso,n1); memcpy(phso,g1,sizeof(double)*n1); 
+  vector_resize((IvocVect*)vhso,n1); memcpy(phso,g1,sizeof(double)*n1); 
   hoc_call_func(pHocVecFunc,0); dm1 = hretval; //get measure on original group 1
   hoc_pushx(dm0); hoc_pushx(dm1); hoc_call_func(pHocCompFunc,2); //call comparison function
   dmobs = onesided?hretval:fabs(hretval); // "observed" value of statistic  
@@ -1663,6 +1663,7 @@ static double vpr2 (void* vv) {
     }
     printf("\n");
   }
+  return 0;
 }
 
 static void vprpr (double x, int base) {
@@ -1782,7 +1783,7 @@ static double irate (void* vv) {
   unsigned int i, j, n, nx;
   double *prate,*phist,binsz,t1,t2;
   nx = vector_arg_px(1, &phist);
-  vector_resize(vv,nx);
+  vector_resize((IvocVect*)vv,nx);
   vector_instance_px(vv, &prate);
   binsz = *getarg(2);
   for(i=0;i<nx;i++) {
@@ -2024,8 +2025,8 @@ unsigned int hashseed2 (int na, double* x) {
     if (xx.i[0]==0) { xx.i[0]=xx.i[1]; xx.i[0]<<=4; } // high order bits may be 0
     if (xx.i[1]==0) { xx.i[1]=xx.i[0]; xx.i[1]<<=4; } // low order bits unlikely 0
     xx.i[0]+=(i+1); xx.i[1]+=(i+1); // so different for different order args
-    mcell_ran4_init((uint32_t)xx.i[1]);
-    mcell_ran4((uint32_t*)xx.i[0], &y, 1, big); // generate a pseudorand number based on these
+    mcell_ran4_init(xx.i[1]);
+    mcell_ran4(&xx.i[0], &y, 1, big); // generate a pseudorand number based on these
     while (y>UINT_MAX) y/=1e9; // UINT_MAX is 4.294967e+09
     valseed*=(unsigned int)y;  // keep multiplying these out
   }
@@ -2090,7 +2091,7 @@ FUNCTION mc4seed () {
   for (i=2;ifarg(i);i++) {
     valseed*=(unsigned int)(*getarg(i));
   }
-  mcell_ran4_init((uint32_t)valseed); // do initialization
+  mcell_ran4_init(valseed); // do initialization
   return valseed;
   ENDVERBATIM
 }

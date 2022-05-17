@@ -20,7 +20,7 @@ VERBATIM
 #include "misc.h"
 #include "unistd.h"
 static int ctt(unsigned int, char**);
-static int setdvi2(double*,double*,int,int);
+static void setdvi2(double*,double*,int,int);
 
 #define PI 3.141592653589793115997963468544
 #define nil 0
@@ -105,7 +105,7 @@ static int  vspn;
 static double *isp, *vsp, *wsp, *jsp, *invlp;
 static double *lop(Object *ob, unsigned int i); // accessed by all INTF
 static double *jrid, *jrtv;
-static void   *jridv, *jrtvv;
+static IvocVect   *jridv, *jrtvv;
 static unsigned int jtpt,jtmax,jrmax;
 static unsigned long int jri,jrj;
 static unsigned long int spktot, eventtot;
@@ -123,7 +123,7 @@ double* wwo[NSW];
 static int AM=0, NM=1, GA=2, GB=3, SU=3, IN=4, DP=2; // from labels.hoc
 static double wts[10],hsh[10];  // for jitcons to use as a junk pointer
 static void spkoutf2();
-int gsort2 (double *db, Point_process **da,int dvt,double *dbs, Point_process **das);
+void gsort2 (double *db, Point_process **da,int dvt,double *dbs, Point_process **das);
 ENDVERBATIM
 
 :* NEURON, PARAMETER, ASSIGNED blocks
@@ -1356,7 +1356,7 @@ FUNCTION setdviv () {
 
 : finishdvi2 () -- finalize dvi , sort dvi , allocate and set sprob
 VERBATIM
-static int finishdvi2 (struct ID0* p) {
+static void finishdvi2 (struct ID0* p) {
   Point_process **da,**das;
   double *db,*dbs;
   int i, dvt;
@@ -1410,7 +1410,7 @@ ENDVERBATIM
 VERBATIM
 // setdvi2(divid_vec,del_vec,div_cnt,flag)
 // flag 1 means just augment, 0or2: sort by del, 0: clear lists and replace
-static int setdvi2 (double *y,double *d,int dvt,int flag) {
+static void setdvi2 (double *y,double *d,int dvt,int flag) {
   int i,j,ddvi; double *db, *dbs; unsigned char pdead; unsigned int b,e;
   Object *lb; Point_process *pnnt, **da, **das;
   ddvi=(int)DEAD_DIV;
@@ -1527,7 +1527,7 @@ PROCEDURE turnoff () {
 
 VERBATIM 
 // gsort2() sorts 2 parallel vectors -- delays and Point_process pointers
-int gsort2 (double *db, Point_process **da,int dvt,double *dbs, Point_process **das) {
+void gsort2 (double *db, Point_process **da,int dvt,double *dbs, Point_process **das) {
   int i;
   scr=scrset(dvt);
   for (i=0;i<dvt;i++) scr[i]=i;
@@ -1750,7 +1750,7 @@ PROCEDURE vers () {
 
 :** val(t,tstart) fills global vii[] to pass values back to record() (called from record())
 VERBATIM
-double val (double xx, double ta) { 
+void val (double xx, double ta) { 
   vii[1]=VAM*EXP(-(xx - ta)/tauAM);
   vii[2]=VNM*EXP(-(xx - ta)/tauNM);
   vii[3]=VGA*EXP(-(xx - ta)/tauGA);
@@ -1767,7 +1767,7 @@ ENDVERBATIM
 
 :** valps(t,tstart) like val but builds voltages for pop spike
 VERBATIM
-double valps (double xx, double ta) { 
+void valps (double xx, double ta) { 
   vii[1]=VAM*EXP(-(xx - ta)/tauAM);
   vii[2]=VNM*EXP(-(xx - ta)/tauNM);
   vii[3]=VGA*EXP(-(xx - ta)/tauGA);
@@ -2010,7 +2010,7 @@ static double* lop (Object *ob, unsigned int i) {
 }
 
 // use stoppo() as a convenient conditional breakpoint in gdb (gdb watching is too slow)
-int stoppo () {
+void stoppo () {
 }
 
 //** ctt(ITEM#) find cells that exist by name
@@ -2111,7 +2111,7 @@ PROCEDURE recini () {
     vp = SOP;
     vp->p=0;
     // open up the vector maximally before writing into it; will correct size in fini
-    for (k=0;k<NSV;k++) if (vp->vvo[k]!=0) vector_resize(vp->vv[k], vp->size);
+    for (k=0;k<NSV;k++) if (vp->vvo[k]!=0) vector_resize((IvocVect*)vp->vv[k], vp->size);
   }}
   ENDVERBATIM
 }
@@ -2126,7 +2126,7 @@ PROCEDURE fini () {
   if (IDP->record) {
     record(); // finish up
     for (k=0;k<NSV;k++) if (vp->vvo[k]!=0) { // not nil pointer
-      vector_resize(vp->vv[k], vp->p);
+      vector_resize((IvocVect*)vp->vv[k], vp->p);
     }
   }}
   ENDVERBATIM
@@ -2225,9 +2225,9 @@ PROCEDURE initrec () {
   if (i==-1) {printf("INTF record ERR %s not recognized\n",name); hoc_execerror("",0); }
   vp->vv[i]=vector_arg(2);
   vector_arg_px(2, &(vp->vvo[i]));
-  if (vp->size==0) { vp->size=(unsigned int)vector_buffer_size(vp->vv[i]);
-  } else if (vp->size != (unsigned int)vector_buffer_size(vp->vv[i])) {
-    printf("INTF initrec ERR vectors not all same size: %d vs %d",vp->size,vector_buffer_size(vp->vv[i]));
+  if (vp->size==0) { vp->size=(unsigned int)vector_buffer_size((IvocVect*)vp->vv[i]);
+  } else if (vp->size != (unsigned int)vector_buffer_size((IvocVect*)vp->vv[i])) {
+    printf("INTF initrec ERR vectors not all same size: %d vs %d",vp->size,vector_buffer_size((IvocVect*)vp->vv[i]));
     hoc_execerror("", 0); 
   }} 
   ENDVERBATIM
@@ -2427,7 +2427,7 @@ PROCEDURE global_init () {
     printf("Initializing ww to record for %g (%g)\n",vdt*wwsz,vdt);
     wwpt=0;
     for (k=0;k<(int)nsw;k++) {
-      vector_resize(ww[k], wwsz);
+      vector_resize((IvocVect*)ww[k], wwsz);
       for (j=0;j<wwsz;j++) wwo[k][j]=0.;
     }
   }
@@ -2443,7 +2443,7 @@ PROCEDURE global_init () {
 PROCEDURE global_fini () {
   VERBATIM
   int k;
-  for (k=0;k<(int)nsw;k++) vector_resize(ww[k], (int)floor(t/vdt+0.5));
+  for (k=0;k<(int)nsw;k++) vector_resize((IvocVect*)ww[k], (int)floor(t/vdt+0.5));
   if (jridv && jrj<jrmax) {
     vector_resize(jridv, jrj); 
     vector_resize(jrtvv, jrj);

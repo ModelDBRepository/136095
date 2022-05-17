@@ -300,7 +300,7 @@ VERBATIM
 //copynz(valvec,binvec)
 static double copynz (void* vv) {
   double* pV;
-  int n = vector_instance_px(vv,&pV) , iCount = 0 , idx=0;
+  int n = vector_instance_px((IvocVect*)vv,&pV) , iCount = 0 , idx=0;
   int iStartIDx = 0, iEndIDx = n - 1;
   if(ifarg(2)){
     iStartIDx = (int)*getarg(1);
@@ -326,7 +326,7 @@ static double copynz (void* vv) {
     }
   }
 
-  vector_resize(pV,iOutSz);
+  vector_resize((IvocVect*)pV,iOutSz);
 
   return (double)iOutSz;
 }
@@ -965,7 +965,7 @@ FUNCTION GetWPath () {
 
   double* ppre = 0, *ppo = 0, *pwght = 0, *pdel = 0, *pout = 0;
   int iSz,iTmp,i,j,k,l;
-  void* voi;
+  IvocVect* voi;
 
   iSz = vector_arg_px(1,&ppre);
 
