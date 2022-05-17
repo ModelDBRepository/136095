@@ -454,7 +454,7 @@ FUNCTION GetCCR () {
     return 0.0;
   }
 
-  unsigned int iSeed = ifarg(7)?(unsigned int)*getarg(7):INT_MAX-109754;
+  uint32_t iSeed = ifarg(7)?(uint32_t)*getarg(7):INT_MAX-109754;
 
   double* pUse = 0; 
   
@@ -562,7 +562,7 @@ FUNCTION GetCentrality () {
     return 0.0;
   }
 
-  unsigned int iSeed = ifarg(4)?(unsigned int)*getarg(4):INT_MAX-109754;
+  uint32_t iSeed = ifarg(4)?(uint32_t)*getarg(4):INT_MAX-109754;
 
   double* pUse = 0; 
   
@@ -780,7 +780,7 @@ FUNCTION CountNeighborsR () {
 
   double dSubsamp = ifarg(6)?*getarg(6):1.0;
 
-  unsigned int iSeed = ifarg(7)?(unsigned int)*getarg(7):INT_MAX-109754;
+  uint32_t iSeed = ifarg(7)?(uint32_t)*getarg(7):INT_MAX-109754;
 
   if(iStartID < 0 || iStartID >= iCells ||
      iEndID < 0 || iEndID >= iCells ||
@@ -1185,7 +1185,7 @@ FUNCTION GetPathR () {
 
   double dSubsamp = ifarg(6)?*getarg(6):1.0;
 
-  unsigned int iSeed = ifarg(7)?(unsigned int)*getarg(7):INT_MAX-109754;
+  uint32_t iSeed = ifarg(7)?(uint32_t)*getarg(7):INT_MAX-109754;
 
   if(iStartID < 0 || iStartID >= iCells ||
      iEndID < 0 || iEndID >= iCells ||
@@ -1657,7 +1657,7 @@ FUNCTION GetPathSubPop () {
 
   int bSelfLoop = ifarg(6)?(int)*getarg(6):0;
 
-  unsigned int iSeed = ifarg(7)?(unsigned int)*getarg(7):INT_MAX-109754;
+  uint32_t iSeed = ifarg(7)?(uint32_t)*getarg(7):INT_MAX-109754;
 
   //init array of cells/neighbors to check
   int* pCheck = (int*)malloc(sizeof(int)*iCells);
@@ -1810,7 +1810,7 @@ FUNCTION GetLoopLength () {
   }
   double dSubsamp = ifarg(5)?*getarg(5):1.0;
 
-  unsigned int iSeed = ifarg(6)?(unsigned int)*getarg(6):INT_MAX-109754;
+  uint32_t iSeed = ifarg(6)?(uint32_t)*getarg(6):INT_MAX-109754;
 
   //init array of cells/neighbors to check
   int* pCheck = (int*)malloc(sizeof(int)*iCells);
