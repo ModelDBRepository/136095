@@ -44,7 +44,7 @@ typedef struct VPT {
  unsigned int  id;
  unsigned int  size;
  unsigned int  p;
- void*    vv[NSV];
+ IvocVect*    vv[NSV];
  double* vvo[NSV];
 } vpt;
 
@@ -118,7 +118,7 @@ static int cty[CTYPp], process;
 static int CTYN, CTYPi, STYPi, dscrsz; // from labels.hoc
 static double qlimit, *dscr;
 FILE *wf1, *wf2, *tf;
-void*    ww[NSW];
+IvocVect*    ww[NSW];
 double* wwo[NSW];
 static int AM=0, NM=1, GA=2, GB=3, SU=3, IN=4, DP=2; // from labels.hoc
 static double wts[10],hsh[10];  // for jitcons to use as a junk pointer
@@ -1119,7 +1119,7 @@ FUNCTION getconv () {
 VERBATIM 
 {
   int iarg,i,j,k,dvt,sz,prfl,getactive; double *x,flag;
-  void* voi; Point_process **das; id0 *pp;
+  IvocVect* voi; Point_process **das; id0 *pp;
   ip=IDP; pg=ip->pg; // this should be called right after jitcondiv()
   sz=ip->dvt; //  // assume conv similar to div
   getactive=0;
@@ -1131,8 +1131,8 @@ VERBATIM
   }
   if (!ifarg(iarg)) prfl=0; else { prfl=1;
     voi=vector_arg(iarg); 
-    if (flag==2.) { x=vector_newsize((IvocVect*)voi,CTYPi); for (i=0;i<CTYPi;i++) x[i]=0;
-    } else x=vector_newsize((IvocVect*)voi,sz); 
+    if (flag==2.) { x=vector_newsize(voi,CTYPi); for (i=0;i<CTYPi;i++) x[i]=0;
+    } else x=vector_newsize(voi,sz); 
   } 
   for (i=0,k=0; i<cesz; i++) {
     lop(ce,i);
@@ -1142,7 +1142,7 @@ VERBATIM
       if (getactive && qp->sprob[j]==0) continue;
       if (ip==*((id0**) &((das[j]->_prop->dparam)[2]))) {
         if (prfl) {
-          if (flag!=2.0 && k>=sz) x=vector_newsize((IvocVect*)voi,sz*=2);
+          if (flag!=2.0 && k>=sz) x=vector_newsize(voi,sz*=2);
           if (flag==1.0) { x[k]=(double)qp->type; 
           } else if (flag==2.0) { x[qp->type]++; 
           } else x[k]=(double)qp->id;
@@ -1152,7 +1152,7 @@ VERBATIM
       }
     }
   }
-  if (prfl && flag!=2) vector_resize((IvocVect*)voi,k);
+  if (prfl && flag!=2) vector_resize(voi,k);
   _lgetconv=(double)k;
 }
 ENDVERBATIM
@@ -1786,7 +1786,7 @@ PROCEDURE record () {
   if (ip->record==1) {
     while ((int)vp->p >= (int)vp->size-(int)((t-tg)/vdt)-10) { 
       vp->size*=2;
-      for (k=0;k<NSV;k++) if (vp->vv[k]!=0x0) vp->vvo[k]=vector_newsize((IvocVect*)vp->vv[k], vp->size);
+      for (k=0;k<NSV;k++) if (vp->vv[k]!=0x0) vp->vvo[k]=vector_newsize(vp->vv[k], vp->size);
       // printf("**** WARNING expanding recording room to %d (type%d id%d at %g)****\n",vp->size,IDP->type,IDP->id,t);
     }
   } else if ((int)vp->p > (int)vp->size-(int)((t-tg)/vdt)) { // shift if record==2
@@ -2036,13 +2036,13 @@ PROCEDURE test () {
 : lof can find object information
 PROCEDURE lof () {
 VERBATIM {
-  Object *ob; int num,i,ii,j,k,si,nx;  double *vvo[7], *par; void *vv[7];
+  Object *ob; int num,i,ii,j,k,si,nx;  double *vvo[7], *par; IvocVect *vv[7];
   ob = *(hoc_objgetarg(1));
   si=(int)*getarg(2);
   num = ivoc_list_count(ob);
   if (num!=7) { printf("INTF lof ERR %d>7\n",num); hxe(); }
   for (i=0;i<num;i++) { 
-    j = list_vector_px3(ob, i, &vvo[i], (IvocVect**)vv[i]);
+    j = list_vector_px3(ob, i, &vvo[i], &vv[i]);
     if (i==0) nx=j;
     if (j!=nx) { printf("INTF lof ERR %d %d\n",j,nx); hxe(); }
   }
@@ -2111,7 +2111,7 @@ PROCEDURE recini () {
     vp = SOP;
     vp->p=0;
     // open up the vector maximally before writing into it; will correct size in fini
-    for (k=0;k<NSV;k++) if (vp->vvo[k]!=0) vector_resize((IvocVect*)vp->vv[k], vp->size);
+    for (k=0;k<NSV;k++) if (vp->vvo[k]!=0) vector_resize(vp->vv[k], vp->size);
   }}
   ENDVERBATIM
 }
@@ -2126,7 +2126,7 @@ PROCEDURE fini () {
   if (IDP->record) {
     record(); // finish up
     for (k=0;k<NSV;k++) if (vp->vvo[k]!=0) { // not nil pointer
-      vector_resize((IvocVect*)vp->vv[k], vp->p);
+      vector_resize(vp->vv[k], vp->p);
     }
   }}
   ENDVERBATIM
@@ -2163,7 +2163,7 @@ PROCEDURE chk (f) {
   if (lfg==5) { 
     printf("wwpt %d wwsz %d\n WW vecs: ",wwpt,wwsz);
     printf("wwwid %g wwht %d nsw %g\n WW vecs: ",wwwid,(int)wwht,nsw);
-    for (i=0;i<NSW;i++) printf("%d %x %x;",i,ww[i],wwo[i]);
+    for (i=0;i<NSW;i++) printf("%d %p %p;",i,ww[i],wwo[i]);
   }}
   ENDVERBATIM
 }
@@ -2225,9 +2225,9 @@ PROCEDURE initrec () {
   if (i==-1) {printf("INTF record ERR %s not recognized\n",name); hoc_execerror("",0); }
   vp->vv[i]=vector_arg(2);
   vector_arg_px(2, &(vp->vvo[i]));
-  if (vp->size==0) { vp->size=(unsigned int)vector_buffer_size((IvocVect*)vp->vv[i]);
-  } else if (vp->size != (unsigned int)vector_buffer_size((IvocVect*)vp->vv[i])) {
-    printf("INTF initrec ERR vectors not all same size: %d vs %d",vp->size,vector_buffer_size((IvocVect*)vp->vv[i]));
+  if (vp->size==0) { vp->size=(unsigned int)vector_buffer_size(vp->vv[i]);
+  } else if (vp->size != (unsigned int)vector_buffer_size(vp->vv[i])) {
+    printf("INTF initrec ERR vectors not all same size: %d vs %d",vp->size,vector_buffer_size(vp->vv[i]));
     hoc_execerror("", 0); 
   }} 
   ENDVERBATIM
@@ -2277,7 +2277,7 @@ PROCEDURE initwrec () {
     if (num>NSW) { printf("INTF initwrec() WARN: can only store %d ww vecs\n",NSW); hxe();}
     nsw=(double)num;
     for (k=0;k<num;k++) {
-      cap = list_vector_px2(ob, k, &wwo[k], (IvocVect**)ww[k]);
+      cap = list_vector_px2(ob, k, &wwo[k], &ww[k]);
       if (k==0) wwsz=cap; else if (wwsz!=cap) {
         printf("INTF initwrec ERR w-vecs size err: %d,%d,%d",k,wwsz,cap); hxe(); }
     }
@@ -2427,7 +2427,7 @@ PROCEDURE global_init () {
     printf("Initializing ww to record for %g (%g)\n",vdt*wwsz,vdt);
     wwpt=0;
     for (k=0;k<(int)nsw;k++) {
-      vector_resize((IvocVect*)ww[k], wwsz);
+      vector_resize(ww[k], wwsz);
       for (j=0;j<wwsz;j++) wwo[k][j]=0.;
     }
   }
@@ -2443,7 +2443,7 @@ PROCEDURE global_init () {
 PROCEDURE global_fini () {
   VERBATIM
   int k;
-  for (k=0;k<(int)nsw;k++) vector_resize((IvocVect*)ww[k], (int)floor(t/vdt+0.5));
+  for (k=0;k<(int)nsw;k++) vector_resize(ww[k], (int)floor(t/vdt+0.5));
   if (jridv && jrj<jrmax) {
     vector_resize(jridv, jrj); 
     vector_resize(jrtvv, jrj);
