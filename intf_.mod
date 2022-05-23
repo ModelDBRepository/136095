@@ -325,7 +325,8 @@ unsigned int GetDVIDSeedVal(unsigned int id) {
   } else { 
     if (seadsetting==2) printf("Warning: GetDVIDSeedVal called with wt rand turned off\n");
     x[0]=(double)id; x[1]=seaddvioff;
-    sead=hashseed2(2,x);
+    /* the cast is trying to preserve (probably buggy) C behaviour in C++ */
+    sead=hashseed2(2, (double*)&x);
   }
   return sead;
 }
@@ -350,7 +351,7 @@ ENDVERBATIM
   VERBATIM
   if (stopoq && !qsz()) stoprun=1;
   ip=IDP; pg=ip->pg;
-  if (ip->dead) return;
+  if (ip->dead) return; // this cell has died
   _ljcn=ip->jcn; _lid=ip->id;
   tpnt = _pnt; // this pnt
   if (PATHMEASURE) { // do all code for this
@@ -416,7 +417,8 @@ ENDVERBATIM
           sead=(unsigned int)(floor(_lflag)*ip->id*seedstep); // all integers
         } else { // hash on presynaptic id+FOFFSET,poid,seedstep
           hsh[0]=floor(_lflag); hsh[1]=(double)ip->id; hsh[2]=seedstep;
-          sead=hashseed2(3,hsh); // hsh[] is just scratch pad
+          /* the cast is trying to preserve (probably buggy) C behaviour in C++ */
+          sead=hashseed2(3,(double*)&hsh); // hsh[] is just scratch pad
         }
         mcell_ran4(&sead, &_args[sy], 2, 1.);
         for (ii=sy;ii<sy+2;ii++) { // scale appropriately; 
@@ -912,7 +914,7 @@ PROCEDURE callback (fl) {
     if (jp->sprob[i]) (*pnt_receive[jp->dvi[i]->_prop->_type])(jp->dvi[i], wts, idty); 
     _p=upnt->_prop->param; _ppvar=upnt->_prop->dparam; // restore pointers
     i++;
-    if (i>=jp->dvt) return 0; // ran out TODO:Ask Michel
+    if (i>=jp->dvt) return 0; // ran out
     ddel=jp->del[i]-del0;   // delays are relative to event; use difference in delays
   }
   // skip over pruned outputs and dead cells:
@@ -936,7 +938,7 @@ VERBATIM {
   int i,j,k,prty,poty,dv,dvt,dvii; double *x, *db, *dbs; 
   Object *lb;  Point_process *pnnt, **da, **das;
   ip=IDP; pg=ip->pg; // this should be called right after jitcondiv()
-  if (ip->dead) return 0; // TODO: Ask Michael
+  if (ip->dead) return 0;
   prty=ip->type;
   sead=GetDVIDSeedVal(ip->id);//seed for divergence and delays
   for (i=0,k=0,dvt=0;i<CTYN;i++) { // dvt gives total divergence
@@ -1054,7 +1056,7 @@ FUNCTION getdvi () {
     void* voi, *voi2,*voi3; Point_process **das;
     ip=IDP; pg=ip->pg; // this should be called right after jitcondiv()
     getactive=a2=a3=a4=0;
-    if (ip->dead) return 0; // TODO: Ask Michael
+    if (ip->dead) return 0;
     dvt=ip->dvt;
     dbs=ip->del;   das=ip->dvi;
     _lgetdvi=(double)dvt; 
@@ -1097,7 +1099,8 @@ FUNCTION getdvi () {
             sead=(unsigned int)(FOFFSET+ip->id)*qp->id*seedstep; 
           } else { // hashed sead setting
             hsh[0]=(double)(FOFFSET+ip->id); hsh[1]=(double)(qp->id); hsh[2]=seedstep;
-            sead=hashseed2(3,hsh); 
+            /* the cast is trying to preserve (probably buggy) C behaviour in C++ */
+            sead=hashseed2(3, (double*)&hsh);
           }
           mcell_ran4(&sead, y, 2, 1.);
           for(ii=0;ii<2;ii++) {
@@ -1395,9 +1398,9 @@ ENDVERBATIM
 PROCEDURE setdvi () {
 VERBATIM {
   int i,dvt,flag; double *d, *y;
-  if (! ifarg(1)) {printf("setdvi(v1,v2[,flag]): v1:cell#s; v2:delays\n"); return 0; } // TODO: Ask Michael
+  if (! ifarg(1)) {printf("setdvi(v1,v2[,flag]): v1:cell#s; v2:delays\n"); return 0; }
   ip=IDP; pg=ip->pg; // this should be called right after jitcondiv()
-  if (ip->dead) return 0; // TODO: Ask Michael
+  if (ip->dead) return 0;
   dvt=vector_arg_px(1, &y);
   i=vector_arg_px(2, &d);
   if (ifarg(3)) flag=(int)*getarg(3); else flag=0;
@@ -1460,7 +1463,7 @@ PROCEDURE prune () {
       printf("INTFpruneB:Div exceeds dscrsz: %d>%d\n",ip->dvt,dscrsz); hxe(); }
     if (p==0.) {
       for (j=0;j<ip->dvt;j++) ip->sprob[j]=1; // unprune completely
-      return 0; // now that unpruning is done, can return TODO: Ask Michael
+      return 0; // now that unpruning is done, can return
     }
     potype=ifarg(2)?(int)*getarg(2):-1;
     sead=(ifarg(3))?(unsigned int)*getarg(3):GetDVIDSeedVal(ip->id);//seed for divergence and delays
@@ -1639,7 +1642,7 @@ PROCEDURE jitrec () {
   int i;
   if (! ifarg(2)) { // clear with jitrec() or jitrec(0)
     jrmax=0; jridv=0x0; jrtvv=0x0;
-    return 0; // TODO: Ask Michael
+    return 0;
   }
   i =   vector_arg_px(1, &jrid); // could just set up the pointers once
   jrmax=vector_arg_px(2, &jrtv);
@@ -1782,7 +1785,7 @@ PROCEDURE record () {
   VERBATIM {
   int i,j,k,nz; double ti;
   vp = SOP;
-  if (tg>=t) return 0; // TODO: Ask Michael
+  if (tg>=t) return 0;
   if (ip->record==1) {
     while ((int)vp->p >= (int)vp->size-(int)((t-tg)/vdt)-10) { 
       vp->size*=2;
@@ -1820,7 +1823,7 @@ PROCEDURE recspk (x) {
   VERBATIM { int k;
   vp = SOP;
   record();
-  if (vp->p > vp->size || vp->vvo[6]==0) return 0; // TODO: Ask Michael 
+  if (vp->p > vp->size || vp->vvo[6]==0) return 0;
   if (vp->vvo[0]!=0x0) vp->vvo[0][vp->p-1]=_lx;
   vp->vvo[6][vp->p-1]=spkht; // the spike
   tg=_lx;
@@ -2318,7 +2321,7 @@ PROCEDURE wrecord (te) {
           wwo[wrp][k+j] += scale*_t_Psk[j+max]; // direct copy from the Psk table
         }
       }
-    } else if (twg>=t) { return 0; // TODO: Ask Michael
+    } else if (twg>=t) { return 0;
     } else {
       for (ti=twg,k=(int)floor((twg-rebeg)/vdt+0.5);ti<=t && k<wwsz;ti+=vdt,k++) { 
         valps(ti,twg);  // valps() for pop spike calculation
@@ -2489,11 +2492,11 @@ FUNCTION flag () {
   char *sf; static int ix,fi,setfl,nx; static unsigned char val; static double *x, delt;
   if (FLAG==OK) { // callback -- DO NOT SET FROM HOC
     FLAG=0.;
-    if (stoprun) {slowset=0; return 0;} // TODO: Ask Michael
+    if (stoprun) {slowset=0; return 0;}
     if (IDP->dbx==-1)printf("slowset fi:%d ix:%d ss:%g delt:%g t:%g\n",fi,ix,slowset,delt,t);
     if (t>slowset || ix>=cesz) {  // done
       printf("Slow-setting of flag %d finished at %g: (%d,%g,%g)\n",fi,t,ix,delt,slowset); 
-      slowset=0.; return 0; // TODO: Ask Michael
+      slowset=0.; return 0;
     }
     if (ix<cesz) {
       lop(ce,ix);
@@ -2505,12 +2508,12 @@ FUNCTION flag () {
       net_send((void**)0x0, wts,tpnt,delt,OK);
       #endif
     }
-    return 0; // TODO: Ask Michael
+    return 0;
   }  
   if (slowset>0 && ifarg(3)) {
     printf("INTF flag() slowset ERR; attempted set during slowset: fi:%d ix:%d ss:%g delt:%g t:%g",\
            fi,ix,slowset,delt,t); 
-    return 0; // TODO: Ask Michael
+    return 0;
   }
   ip = IDP; setfl=ifarg(3); 
   if (ifarg(4)) { slowset=*getarg(4); delt=slowset/cesz; slowset+=t; } 

@@ -92,12 +92,13 @@ VERBATIM
 
     if( !(pipein = popen(syscall, "r"))) {
         fprintf(stderr,"System call failed\n");
-        return 0; // TODO: Ask Michael
+        return 0;
     }
     
     if (fgets(string,BUFSIZ,pipein) == NULL) {
         fprintf(stderr,"System call did not return a string\n");
-        pclose(pipein); return 0; // TODO: Ask Michael
+        pclose(pipein);
+        return 0;
     }
 
     /*  assign_hoc_str(strname, string, 0); */
@@ -120,17 +121,20 @@ VERBATIM
 
     if ( !(outfile = fopen("dassign","w"))) {
         fprintf(stderr,"Can't open output file dassign\n");
-        return 0; // TODO: Ask Michael
+        return 0;
     }
 
     if( !(pipein = popen(syscall, "r"))) {
         fprintf(stderr,"System call failed\n");
-        fclose(outfile); return 0; // TODO: Ask Michael
+        fclose(outfile);
+        return 0;
     }
     
     if (fscanf(pipein,"%lf",&num) != 1) {
         fprintf(stderr,"System call did not return a number\n");
-        fclose(outfile); pclose(pipein); return 0; // TODO: Ask Michael
+        fclose(outfile);
+        pclose(pipein);
+        return 0;
     }
 
     fprintf(outfile,"%s=%g\n",strname,num);

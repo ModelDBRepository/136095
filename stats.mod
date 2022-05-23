@@ -2123,7 +2123,7 @@ FUNCTION gammln (xx) {
 FUNCTION betai(a,b,x) {
 VERBATIM {
   double bt;
-  double gammln(double),betacf(double,double,double);
+  double betacf(double,double,double);
 
   if (_lx < 0.0 || _lx > 1.0) {printf("Bad x in routine BETAI\n"); hxe();}
   if (_lx == 0.0 || _lx == 1.0) bt=0.0;
@@ -2197,7 +2197,6 @@ FUNCTION tstat() {
 
 FUNCTION tdistrib() {
   VERBATIM
-  double gammln(double);
   double x = *getarg(1);
   double dof = *getarg(2);
   double res = (gammln( (dof+1.0) / 2.0 )  / gammln( dof / 2.0 ) );
