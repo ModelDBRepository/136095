@@ -1950,11 +1950,12 @@ PROCEDURE trvsp ()
 {
   VERBATIM 
   int i, flag; 
-  double ind, t0;
+  double ind, local_t0;
   ip=IDP;
   flag=(int) *getarg(1);
   if (subsvint==0.) {printf("trvsp"); return(0.);}
-  ind=isp[0]; t0=vsp[0];
+  ind=isp[0];
+  local_t0=vsp[0];
   if (flag==1) {
     for (i=0; i<vspn; i++) {
       if (isp[i]!=ind) {
@@ -1966,11 +1967,12 @@ PROCEDURE trvsp ()
   } else if (flag==2) {
     for (i=0; i<vspn; i++) {
       if (isp[i]!=ind) {
-        vsp[i-1]=t0+subsvint;
-        ind=isp[i]; t0=vsp[i];
+        vsp[i-1] = local_t0 + subsvint;
+        ind = isp[i];
+        local_t0 = vsp[i];
       }
     }
-    vsp[vspn-1]=t0+subsvint;
+    vsp[vspn-1] = local_t0 + subsvint;
   } else {printf("trvsp flag %d not recognized\n",flag); hxe();}
   ENDVERBATIM
 }

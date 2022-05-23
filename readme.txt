@@ -60,4 +60,8 @@ Samuel Neymotin at samn at neurosim dot downstate dot edu
      or
 Bill Lytton at billl at neurosim dot downstate dot edu
 
-20220517 Edited multiple files to support NEURON versions <8.1.0, 8.2.0 and 9.0.0. -NEURON Developers
+--------------------------------------------------------------------------
+                             Changelog
+--------------------------------------------------------------------------
+2022-05: Updated MOD files to contain valid C++ and be compatible with the
+         upcoming versions 8.2 and 9.0 of NEURON.
