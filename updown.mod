@@ -19,7 +19,7 @@ VERBATIM
 #include <math.h>
 #include <limits.h> // contains LONG_MAX 
 #include <sys/time.h> 
-#include <misc.h>
+#include "misc.h"
 static void hxf(void *ptr) { free(ptr); hoc_execerror("",0); }
 ENDVERBATIM
 

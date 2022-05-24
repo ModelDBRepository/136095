@@ -325,7 +325,6 @@ ENDVERBATIM
 : uses ind as index into vecA's to load in vecB's (for select); a nondestructive fewind()
 VERBATIM
 static double findx (void* vv) {
-  IvocVect* vv_tmp = (IvocVect*)vv;
   int i, j, ni, nx, av[VRRY], bv[VRRY], num;
   Object *ob1, *ob2;
   double *ind, *avo[VRRY], *bvo[VRRY];
@@ -343,7 +342,7 @@ static double findx (void* vv) {
   }
   nx=av[0]; // size of source vecs
   for (i=0;i<num;i++) { 
-    bv[i]=list_vector_px2(ob2, i, &bvo[i], &vv_tmp); // dest vectors 
+    bv[i]=list_vector_px2(ob2, i, &bvo[i], (IvocVect**)&vv); // dest vectors 
     if (vector_buffer_size((IvocVect*)vv)<ni) { 
       printf("findx ****ERRD**** arg#%d need:%d sz:%d\n",num+i+1,ni,vector_buffer_size((IvocVect*)vv));
       hoc_execerror("Destination vector with insufficient size: ", 0); 
@@ -370,7 +369,6 @@ ENDVERBATIM
 : ind picks out specific vectors if not doing all of them
 VERBATIM
 static double lma (void* vv) {
-  IvocVect* vv_tmp = (IvocVect*)vv;
   int i, j, k, ia, ib, ni, nj, nx, av[VRRY], bv[VRRY], num, numb, beg, end, *xx;
   Object *ob1, *ob2;
   double *ind, *avo[VRRY], *bvo[VRRY], mul,mmul,add,madd;
@@ -397,7 +395,7 @@ static double lma (void* vv) {
   nx=av[0]; // size of source vecs
   if (beg>=end || beg<0 || end>nx) {printf("lma ERRC1 OOB %d - %d (%d)\n",beg,end,nx); hxe();}
   for (i=0;i<num;i++) { 
-    bv[i]=list_vector_px2(ob2, i, &bvo[i], &vv_tmp); // dest vectors 
+    bv[i]=list_vector_px2(ob2, i, &bvo[i], (IvocVect**)&vv); // dest vectors 
     if (bv[i]!=(end-beg)) bvo[i]=vector_newsize((IvocVect*)vv, end-beg);
   }
   if (nj>0) {
@@ -2410,8 +2408,8 @@ int openvec (int arg, double **y) {
 
 // vector_newsize() will also increase size of vector
 double *vector_newsize (IvocVect* vv, int n) {
-  vector_resize((IvocVect*)vv,n);
-  return vector_vec((IvocVect*)vv);
+  vector_resize(vv,n);
+  return vector_vec(vv);
 }
 ENDVERBATIM
 
