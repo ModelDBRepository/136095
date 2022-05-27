@@ -3,7 +3,7 @@
 VERBATIM
 #include "misc.h"
 #define NSW 5  // store into this many ww field vecs
-static void*   ww[NSW];
+static IvocVect*   ww[NSW];
 static double* wwo[NSW];
 static int ixp1;
 ENDVERBATIM

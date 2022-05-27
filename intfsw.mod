@@ -300,7 +300,7 @@ VERBATIM
 //copynz(valvec,binvec)
 static double copynz (void* vv) {
   double* pV;
-  int n = vector_instance_px(vv,&pV) , iCount = 0 , idx=0;
+  int n = vector_instance_px((IvocVect*)vv,&pV) , iCount = 0 , idx=0;
   int iStartIDx = 0, iEndIDx = n - 1;
   if(ifarg(2)){
     iStartIDx = (int)*getarg(1);
@@ -326,7 +326,7 @@ static double copynz (void* vv) {
     }
   }
 
-  vector_resize(pV,iOutSz);
+  vector_resize((IvocVect*)pV,iOutSz);
 
   return (double)iOutSz;
 }
@@ -412,7 +412,7 @@ FUNCTION GetCCR () {
   }
 
   double** pLV = pList->pv;
-  int* pLen = pList->plen;
+  unsigned int* pLen = pList->plen;
 
   //init vector of distances to each cell , 0 == no path found
   int* pNeighbors = (int*)calloc(iCells,sizeof(int));
@@ -454,7 +454,7 @@ FUNCTION GetCCR () {
     return 0.0;
   }
 
-  unsigned int iSeed = ifarg(7)?(unsigned int)*getarg(7):INT_MAX-109754;
+  uint32_t iSeed = ifarg(7)?(uint32_t)*getarg(7):INT_MAX-109754;
 
   double* pUse = 0; 
   
@@ -543,7 +543,7 @@ FUNCTION GetCentrality () {
   }
 
   double** pLV = pList->pv;
-  int* pLen = pList->plen;
+  unsigned int* pLen = pList->plen;
 
   //init vector of avg distances to each cell , 0 == no path found
   double* pCE; 
@@ -562,7 +562,7 @@ FUNCTION GetCentrality () {
     return 0.0;
   }
 
-  unsigned int iSeed = ifarg(4)?(unsigned int)*getarg(4):INT_MAX-109754;
+  uint32_t iSeed = ifarg(4)?(uint32_t)*getarg(4):INT_MAX-109754;
 
   double* pUse = 0; 
   
@@ -655,7 +655,7 @@ FUNCTION GetCC () {
   }
 
   double** pLV = pList->pv;
-  int* pLen = pList->plen;
+  unsigned int* pLen = pList->plen;
 
   //init vector of distances to each cell , 0 == no path found
   int* pNeighbors = (int*)calloc(iCells,sizeof(int));
@@ -753,7 +753,7 @@ FUNCTION CountNeighborsR () {
   }
 
   double** pLV = pList->pv;
-  int* pLen = pList->plen;
+  unsigned int* pLen = pList->plen;
 
   //init vector of avg distances to each cell , 0 == no path found
   double* pVD; 
@@ -780,7 +780,7 @@ FUNCTION CountNeighborsR () {
 
   double dSubsamp = ifarg(6)?*getarg(6):1.0;
 
-  unsigned int iSeed = ifarg(7)?(unsigned int)*getarg(7):INT_MAX-109754;
+  uint32_t iSeed = ifarg(7)?(uint32_t)*getarg(7):INT_MAX-109754;
 
   if(iStartID < 0 || iStartID >= iCells ||
      iEndID < 0 || iEndID >= iCells ||
@@ -965,7 +965,7 @@ FUNCTION GetWPath () {
 
   double* ppre = 0, *ppo = 0, *pwght = 0, *pdel = 0, *pout = 0;
   int iSz,iTmp,i,j,k,l;
-  void* voi;
+  IvocVect* voi;
 
   iSz = vector_arg_px(1,&ppre);
 
@@ -1166,7 +1166,7 @@ FUNCTION GetPathR () {
   }
 
   double** pLV = pList->pv;
-  int* pLen = pList->plen;
+  unsigned int* pLen = pList->plen;
 
   //init vector of avg distances to each cell , 0 == no path found
   double* pVD; 
@@ -1185,7 +1185,7 @@ FUNCTION GetPathR () {
 
   double dSubsamp = ifarg(6)?*getarg(6):1.0;
 
-  unsigned int iSeed = ifarg(7)?(unsigned int)*getarg(7):INT_MAX-109754;
+  uint32_t iSeed = ifarg(7)?(uint32_t)*getarg(7):INT_MAX-109754;
 
   if(iStartID < 0 || iStartID >= iCells ||
      iEndID < 0 || iEndID >= iCells ||
@@ -1313,7 +1313,7 @@ FUNCTION GetCCSubPop () {
   }
 
   double** pLV = pList->pv;
-  int* pLen = pList->plen;
+  unsigned int* pLen = pList->plen;
 
   //init vector of distances to each cell , 0 == no path found
   int* pNeighbors = (int*)calloc(iCells,sizeof(int));
@@ -1422,7 +1422,8 @@ FUNCTION GetCCSubPop () {
 FUNCTION GetRecurCount () {
   VERBATIM
   ListVec* pList;
-  int iCells,*pLen,iFromSz,iThruSz,idx,myID,youID,jdx,iCheckSz,*pVisited,*pCheck;
+  unsigned int* pLen;
+  int iCells,iFromSz,iThruSz,idx,myID,youID,jdx,iCheckSz,*pVisited,*pCheck;
   double **pLV,*pFrom,*pThru,*pR;
 
   pList = AllocListVec(*hoc_objgetarg(1));
@@ -1509,7 +1510,7 @@ FUNCTION GetPairDist () {
   }
 
   double** pLV = pList->pv;
-  int* pLen = pList->plen;
+  unsigned int* pLen = pList->plen;
 
   double* pFrom = 0, *pTo = 0;
   int iFromSz = vector_arg_px(3,&pFrom) , iToSz = vector_arg_px(4,&pTo);
@@ -1632,7 +1633,7 @@ FUNCTION GetPathSubPop () {
   }
 
   double** pLV = pList->pv;
-  int* pLen = pList->plen;
+  unsigned int* pLen = pList->plen;
 
   //init vector of avg distances to each cell , 0 == no path found
   double* pVD; 
@@ -1656,7 +1657,7 @@ FUNCTION GetPathSubPop () {
 
   int bSelfLoop = ifarg(6)?(int)*getarg(6):0;
 
-  unsigned int iSeed = ifarg(7)?(unsigned int)*getarg(7):INT_MAX-109754;
+  uint32_t iSeed = ifarg(7)?(uint32_t)*getarg(7):INT_MAX-109754;
 
   //init array of cells/neighbors to check
   int* pCheck = (int*)malloc(sizeof(int)*iCells);
@@ -1787,7 +1788,7 @@ FUNCTION GetLoopLength () {
   }
 
   double** pLV = pList->pv;
-  int* pLen = pList->plen;
+  unsigned int* pLen = pList->plen;
 
   //init vector of avg distances to each cell , 0 == no path found
   double* pVD; 
@@ -1809,7 +1810,7 @@ FUNCTION GetLoopLength () {
   }
   double dSubsamp = ifarg(5)?*getarg(5):1.0;
 
-  unsigned int iSeed = ifarg(6)?(unsigned int)*getarg(6):INT_MAX-109754;
+  uint32_t iSeed = ifarg(6)?(uint32_t)*getarg(6):INT_MAX-109754;
 
   //init array of cells/neighbors to check
   int* pCheck = (int*)malloc(sizeof(int)*iCells);
@@ -1928,7 +1929,7 @@ FUNCTION GetPathEV () {
   }
 
   double** pLV = pList->pv;
-  int* pLen = pList->plen;
+  unsigned int* pLen = pList->plen;
 
   //init vector of distances to each cell , 0 == no path found
   double* pVD; 

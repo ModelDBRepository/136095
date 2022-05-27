@@ -87,7 +87,7 @@ PROCEDURE event_time() {
 PROCEDURE generate() {
 	if (at_time(event)) {
           VERBATIM
-          {char func[8] = "pregencv_c";
+          {char func[11] = "pregencv_c";
             Symbol* s = hoc_lookup(func);
             if (s) {
               hoc_pushx(num);

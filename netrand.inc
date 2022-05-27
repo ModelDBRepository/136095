@@ -51,7 +51,7 @@ INITIAL {
 CONSTRUCTOR {
 VERBATIM
   cbsv=0x0;
-  _p_sop = (void*)ecalloc(1, sizeof(id0)); // important that calloc sets all flags etc to 0
+  _p_sop = (double*)ecalloc(1, sizeof(id0)); // important that calloc sets all flags etc to 0
   ip = IDP;
 ENDVERBATIM
 }
@@ -109,13 +109,13 @@ NET_RECEIVE (weight, on, nspike, r0, t0 (ms)) {
 
 PROCEDURE initrnd () {
   VERBATIM
-  int i,j,max;
-  if (hoc_is_str_arg(i=1)) { 
-    i++;
+  int local_i,j,max;
+  if (hoc_is_str_arg(local_i=1)) {
+    local_i++;
     cbsv=hoc_lookup(gargstr(1));
   }
-  j=vector_arg_px(i++, &ip->tsp);
-  max=vector_arg_px(i++, &ip->wsp);
+  j=vector_arg_px(local_i++, &ip->tsp);
+  max=vector_arg_px(local_i++, &ip->wsp);
   if (max!=j) {printf("initrnd ERR: vecs of different size: %d %d\n",max,j); hxe();}
   if (max==0) {printf("initrnd ERR: vec not initialized\n"); hxe();}
   ENDVERBATIM
