@@ -14096,7 +14096,7 @@ double wd0[CTYPi+1][CTYPi+1][STYPi+1][colr+1]
 double synloc[CTYPi+1][CTYPi+1]//location of synapses
 {DEND=0 SOMA=1 AXON=2}
 
-objref clmpl,clmp,mc,ncl,nc,nclnq
+objref clmpl,clmp,mc,nc,nclnq
 double cpercol[CTYPi+1] //cells per column
 
 proc setcpercolkmj () { // (notebook.dol_1:24562)(notebook.dol_1:24492)
