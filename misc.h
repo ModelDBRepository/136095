@@ -111,13 +111,13 @@ extern void set_seed();
 extern void dshuffle(double* x,int nx);
 extern void ishuffle(int* x,int nx);
 extern unsigned int valseed;
-extern int list_vector_px2 (Object *ob, int i, double** px, IvocVect** vv);
-extern int list_vector_px3 (Object *ob, int i, double** px, IvocVect** vv);
-extern int list_vector_px4 (Object *ob, int i, double** px, unsigned int n);
+int list_vector_px2 (Object *ob, int idx, double** px, IvocVect** vv);
+int list_vector_px3 (Object *ob, int idx, double** px, IvocVect** vv);
+int list_vector_px4 (Object *ob, int idx, double** px, unsigned int n);
 extern int cmpdfn(double a, double b);
 extern int openvec(int, double **);
-int list_vector_px(Object *ob, int i, double** px);
-double *list_vector_resize(Object *ob, int i, int sz);
+int list_vector_px(Object *ob, int idx, double** px);
+double *list_vector_resize(Object *ob, int idx, int sz);
 static void hxe() { hoc_execerror("",0); }
 extern void FreeListVec(ListVec** pp);
 extern ListVec* AllocListVec(Object* p);
