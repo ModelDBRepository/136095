@@ -3160,7 +3160,7 @@ proc rdmuniq () { local i,max,min,n,a3,a,see localobj ro,v1,v2,vin,l
       }
     if (!rdmuniqm4) {
         if (ro==nil) ro=new Random()
-        if (see) ro.ACG($5) // seed it
+        if (see) ro.Random123($5) // seed it
         ro.discunif(min,max)
       }
     vin.resize(0)
@@ -11079,7 +11079,7 @@ func nrstim () { local a,tt,i,j,ti,maxt,ct localobj rdp,vr,vt,vi,nq
     if(numarg()>2) {
         if($3) nq.clear() 
       } else nq.clear()  
-    if(numarg()>3) rdp.ACG($4) else rdp.ACG(1234)
+    if(numarg()>3) rdp.Random123($4) else rdp.Random123(1234)
     rdp.normal(pwght,pvar)
     vt.indgen(0,maxt,1000/prate) vi.resize(vt.size) vr.resize(vt.size)
     for i=ix[$1],ixe[$1] {
@@ -13019,7 +13019,7 @@ obfunc GetCellNQ () { local i,id,n,doexl,doexcc,doconv,doC,dodiv,doblk\
 obfunc GetRandCellNQ () { local i localobj nq,rd
     nq=new NQS("id","type","rand")
     rd=new Random()
-    rd.ACG($1)
+    rd.Random123($1)
     for i=0,allcells-1 nq.append(i,ce.o(i).type,rd.normal(0,1))
     return nq
   }
@@ -13070,10 +13070,10 @@ proc init () {
     avg=$1 shape=$2
     if(numarg()>2)seed=$3 else seed=1234
     rd=new Random()
-    rd.ACG(seed)
+    rd.Random123(seed)
   }
 proc reset () {
-    rd.ACG(seed)
+    rd.Random123(seed)
   }
 func paretoc () { local scale,shape,U
     scale=$1 shape=$2 U = rd.uniform(0,1)
@@ -13133,6 +13133,7 @@ RS0SD=1 //sdev of group 0
 RS1SD=1 //sdev of group 1
 proc rsi () {
     if(myrdm==nil) myrdm=new Random()  
+    myrdm.Random123()
     {myrdm.normal(RS0M,RS0SD) vIN0=new Vector(R0SZ) vIN0.setrand(myrdm)}  
     {myrdm.normal(RS1M,RS1SD) vIN1=new Vector(R1SZ) vIN1.setrand(myrdm)}
     vhsout=new Vector(vIN0.size+vIN1.size)
@@ -13359,7 +13360,7 @@ proc mkspks () { local tmax,rate,t,dt,intt,off,i,alpha localobj rdp
     if(numarg()>3)alpha=$4 else alpha=1
     intt=1e3/rate
     rdp=new Random()
-    rdp.ACG(1234)
+    rdp.Random123(1234)
     rdp.poisson(intt)
     for i=0,1 vs[i].resize(0)
     vs[0]=mkspktrain(rdp,rate,tmax)
@@ -15063,7 +15064,7 @@ proc learnwts () { local i,se,a,lgn localobj myrd,vg,nc
     a=allocvecs(vg)
     if(numarg()>0) se=$1 else se=1234
     myrd=new Random()
-    myrd.ACG(se)
+    myrd.Random123(se)
     vg.resize(ncl.count)
     myrd.uniform(LearnGainLO,LearnGainHI)
     vg.setrand(myrd)
@@ -16259,7 +16260,7 @@ proc setINTFspks () { local se,ndx localobj rdm
         return
       }
     if(numarg()>0)se=$1 else se=1234 //seed for Random
-    rdm=new Random()  rdm.ACG(se) //initialize Random object
+    rdm=new Random()  rdm.Random123(se) //initialize Random object
     if(vq==nil) vq=new NQS("ind","time","wt") else vq.clear() //NQS storing INTF spike times
     intf.clrvspks() //clear INTF spike times
     if(sgron) popstim(rdm) //add random firing of INTF cells
