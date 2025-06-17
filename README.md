@@ -51,7 +51,4 @@ Bill Lytton at billl at neurosim dot downstate dot edu
          signature of mcell_ran4_init function and fix hashseed2 argument.  
 2023-04: Updates for compatibility with the new data structures in the  
          upcoming version 9.0 of NEURON.
-
----
-
 2025-06-02: Converted README to Markdown.
